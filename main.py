@@ -1,73 +1,53 @@
-from turtle import Turtle, Screen
-from paddle import Paddle
+from turtle import Screen 
+from snake import Snake
+from food import Food
 from scoreboard import Scoreboard
-from ball import Ball
 import time
-import random
+
 
 screen = Screen()
-screen.setup(width=800, height=600)
-screen.bgcolor("black")
-screen.title("Pong Game")
+screen.setup(600, 600)
+screen.bgcolor('black')
+screen.title("Snake")
 screen.tracer(0)
 
-paddle_1position = (350, 0)
-paddle_2position = (-350, 0)
 
-paddle = Paddle(position=paddle_1position)
-paddle2 = Paddle(position=paddle_2position)
-ball = Ball(position=(0, 0))
-scoreboard1 = Scoreboard(position=(250, 200))
-scoreboard2 = Scoreboard(position=(-250, 200))
+
+snake = Snake()
+
 
 
 screen.listen()
+screen.onkey(snake.up, "Up")
+screen.onkey(key="Down", fun=snake.down)
+screen.onkey(key="Left", fun=snake.left)
+screen.onkey(key="Right", fun=snake.right)
 
 
-screen.onkeypress(paddle.up, "Up")
-screen.onkeypress(paddle.down, "Down")
-
-screen.onkeypress(paddle2.up, "w")
-screen.onkeypress(paddle2.down, "s")
+food = Food()
+scoreboard = Scoreboard()
 
 game_is_on = True
-
 while game_is_on:
-
-
     screen.update()
+    time.sleep(0.1)
+    snake.move()
 
-    scoreboard1.update_score()
-    scoreboard2.update_score()
-    ball.move()
-    time.sleep(0.05)
+    if snake.head.distance(food) < 15:
+        food.refresh()
+        scoreboard.increase_score()
+        snake.extend()
 
-    if ball.ycor() > 280 or ball.ycor() < -280:
-        ball.bounce()
+    if snake.head.xcor() > 290 or snake.head.xcor() < -290 or snake.head.ycor() > 290 or snake.head.ycor() < -290:
+        scoreboard.reset()
+        snake.reset()
 
-    if ball.xcor() > 335 and ball.distance(paddle.paddle) < 50 or ball.xcor() < -335 and ball.distance(paddle2.paddle) < 50:
-        ball.bounce1()
 
-    if ball.xcor() > 380:
-        ball.goto(0, 0)
-        ball.bounce1()
-        scoreboard1.score += 1
-    elif ball.xcor() < -380:
-        ball.goto(0, 0)
-        ball.bounce1()
-        scoreboard2.score += 1
-
-    if scoreboard1.score == 5:
-        scoreboard1.update_score()
-        winner = "Player 1"
-        game_is_on = False
-        scoreboard1.game_over(winner=winner)
-
-    elif scoreboard2.score == 5:
-        scoreboard2.update_score()
-        winner = "Player 2"
-        game_is_on = False
-        scoreboard2.game_over(winner=winner)
-
+    for segment in snake.segments[1:]:
+        if segment == snake.head:
+            pass
+        elif snake.head.distance(segment) < 10:
+            scoreboard.reset()
+            snake.reset()
 
 screen.exitonclick()
